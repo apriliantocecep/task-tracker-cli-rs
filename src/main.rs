@@ -1,4 +1,13 @@
 use std::env;
+use chrono::{Utc, DateTime};
+
+struct Task {
+    id: u32,
+    description: String,
+    status: String,
+    created_at: DateTime<Utc>,
+    updated_at: DateTime<Utc>,
+}
 
 fn main() {
     let args: Vec<String> = env::args().collect();
