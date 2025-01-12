@@ -1,12 +1,25 @@
-use std::env;
+use std::{env, fs};
 use chrono::{Utc, DateTime};
+use serde::{Serialize, Deserialize};
 
+#[derive(Serialize, Deserialize)]
 struct Task {
     id: u32,
     description: String,
     status: String,
     created_at: DateTime<Utc>,
     updated_at: DateTime<Utc>,
+}
+
+fn load_tasks() -> Vec<Task> {
+    let tasks = fs::read_to_string("tasks.json");
+    match tasks {
+        Ok(tasks) => {
+            let tasks: Vec<Task> = serde_json::from_str(&tasks).unwrap_or_default();
+            tasks
+        }
+        Err(_) => Vec::new(),
+    }
 }
 
 fn main() {
@@ -59,5 +72,16 @@ fn main() {
         _ => {
             eprint!("Unknown command: {}", args[1]);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn test_load_tasks() {
+        let tasks = load_tasks();
+        assert!(tasks.is_empty(), "Tasks should loaded successfully");
     }
 }
