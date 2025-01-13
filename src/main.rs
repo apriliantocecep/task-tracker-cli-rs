@@ -22,6 +22,12 @@ fn load_tasks() -> Vec<Task> {
     }
 }
 
+fn save_task(tasks: &Vec<Task>) {
+    if let Ok(data) = serde_json::to_string_pretty(&tasks) {
+        fs::write("tasks.json", data).expect("Failed to save tasks");
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     
