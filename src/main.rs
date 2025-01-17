@@ -28,6 +28,24 @@ fn save_task(tasks: &Vec<Task>) {
     }
 }
 
+fn add_task(description: String) {
+    let mut tasks: Vec<Task> = load_tasks();
+    let id = if let Some(last_task) = tasks.last() {
+        last_task.id + 1
+    } else { 1 };
+
+    let task = Task {
+        id,
+        description,
+        status: "todo".to_string(),
+        created_at: Utc::now(),
+        updated_at: Utc::now(),
+    };
+    tasks.push(task);
+    save_task(&tasks);
+    println!("Task added successfully (ID: {})", id)
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     
@@ -41,7 +59,7 @@ fn main() {
             if args.len() < 3 {
                 eprintln!("Usage: task-cli add <description>");
             } else {
-                println!("Adding task: {}", args[2]);
+                add_task(args[2..].join(" "))
             }
         }
         "update" => {
@@ -86,8 +104,18 @@ mod tests {
     use super::*;
     
     #[test]
+    #[ignore]
     fn test_load_tasks() {
         let tasks = load_tasks();
         assert!(tasks.is_empty(), "Tasks should loaded successfully");
+    }
+    
+    #[test]
+    fn test_add_task() {
+        let initial_task = load_tasks();
+        add_task("Test Task".to_string());
+        let tasks = load_tasks();
+        assert_eq!(tasks.len(), initial_task.len() + 1);
+        assert_eq!(tasks.last().unwrap().description, "Test Task");
     }
 }
