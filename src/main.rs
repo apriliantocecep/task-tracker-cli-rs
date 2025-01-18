@@ -46,6 +46,18 @@ fn add_task(description: String) {
     println!("Task added successfully (ID: {})", id)
 }
 
+fn update_task(id: u32, description: String) {
+    let mut tasks: Vec<Task> = load_tasks();
+    if let Some(task) = tasks.iter_mut().find(|t| t.id == id) {
+        task.description = description;
+        task.updated_at = Utc::now();
+        save_task(&tasks);
+        println!("Task updated successfully.")
+    } else {
+        println!("Task with ID {} not found.", id)
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     
@@ -65,8 +77,10 @@ fn main() {
         "update" => {
             if args.len() < 4 {
                 eprintln!("Usage: task-cli update <id> <description>");
+            } else if let Ok(id) = args[2].parse() {
+                update_task(id, args[3..].join(" "));
             } else {
-                println!("Updating task {}: {}", args[2], args[3]);
+                eprintln!("Invalid ID.");
             }
         }
         "delete" => {
@@ -102,6 +116,10 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn clear_tasks() {
+        fs::write("tasks.json", "[]").expect("Failed to clear tasks.json")
+    }
     
     #[test]
     #[ignore]
@@ -112,10 +130,25 @@ mod tests {
     
     #[test]
     fn test_add_task() {
+        clear_tasks();
         let initial_task = load_tasks();
         add_task("Test Task".to_string());
         let tasks = load_tasks();
         assert_eq!(tasks.len(), initial_task.len() + 1);
         assert_eq!(tasks.last().unwrap().description, "Test Task");
+    }
+    
+    #[test]
+    fn test_update_task() {
+        clear_tasks();
+        let mut tasks = load_tasks();
+        if tasks.is_empty() {
+            add_task("New Task".to_string());
+            tasks = load_tasks();
+        }
+        let id = tasks.last().unwrap().id;
+        update_task(id, "Updated Task".to_string());
+        let updated_task = load_tasks().into_iter().find(|t| t.id == id).unwrap();
+        assert_eq!(updated_task.description, "Updated Task");
     }
 }
