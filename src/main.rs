@@ -58,6 +58,18 @@ fn update_task(id: u32, description: String) {
     }
 }
 
+fn delete_task(id: u32) {
+    let mut tasks = load_tasks();
+    let init_len = tasks.len();
+    tasks.retain(|t| t.id != id);
+    save_task(&tasks);
+    if tasks.len() < init_len {
+        println!("Task deleted successfully.");
+    } else {
+        println!("Task with ID {} not found.", id);
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     
@@ -86,8 +98,10 @@ fn main() {
         "delete" => {
             if args.len() < 3 {
                 eprintln!("Usage: task-cli delete <id>");
+            } else if let Ok(id) = args[2].parse() {
+                delete_task(id)
             } else {
-                println!("Deleting task: {}", args[2]);
+                eprintln!("Invalid ID.");
             }
         }
         "mark-in-progress" => {
