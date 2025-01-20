@@ -70,6 +70,25 @@ fn delete_task(id: u32) {
     }
 }
 
+fn list_tasks(filter: Option<&str>) {
+    let tasks: Vec<Task> = load_tasks();
+    let filtered_tasks: Vec<&Task> = match filter {
+        None => tasks.iter().collect(),
+        Some(status) => tasks.iter().filter(|t| t.status == status).collect()
+    };
+
+    if filtered_tasks.is_empty() {
+        println!("No tasks found.");
+    } else {
+        for task in filtered_tasks {
+            println!(
+                "ID: {}, Description: {}, Status: {}, CreatedAt: {}, UpdatedAt: {}",
+                task.id, task.description, task.status, task.created_at, task.updated_at
+            );
+        }
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     
@@ -119,7 +138,8 @@ fn main() {
             }
         }
         "list" => {
-            println!("Listing tasks");
+            let filter = args.get(2).map(|status| status.as_str());
+            list_tasks(filter)
         }
         _ => {
             eprint!("Unknown command: {}", args[1]);
